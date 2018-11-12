@@ -86,7 +86,7 @@ class ImageDAO
             return $this->getRandomImage();
         }
         $list = $this->getAllImagesIDsOfCategory($cat);
-        $img = $this->getImage($list[rand(0, count($list))]);
+        $img = $this->getImage($list[rand(0, count($list)-1)]);
         return $img;
     }
 
@@ -169,6 +169,21 @@ class ImageDAO
 
         return $img;
     }
+    public function jumpToImageOfCategory(image $img, $nb, $cat)
+    {
+        $op = $nb > 0 ? '>' : '<';
+        $order = $nb > 0 ? 'ASC' : 'DESC';
+        if($cat!="all") {
+            $tmp = $this->db->query('SELECT * FROM image WHERE id '.$op.' '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id '.$order.' LIMIT '.abs($nb).'; ')->fetchAll(PDO::FETCH_ASSOC);
+            if(isset($tmp[abs($nb)-1])) {
+                $result = $tmp[abs($nb)-1];
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            }
+        } else {
+            $img = $this->jumpToImage($img, $nb);
+        }
+        return $img;
+    }
 
     # Retourne la liste des images consécutives à partir d'une image
     public function getImageList(image $img, $nb)
@@ -183,6 +198,26 @@ class ImageDAO
         while ($id < $this->size() && $id < $max) {
             $res[] = $this->getImage($id);
             $id++;
+        }
+        return $res;
+    }
+
+    public function getImageListOfCategory(image $img, $nb, $cat)
+    {
+        # Verifie que le nombre d'image est non nul
+        if (!$nb > 0) {
+            debug_print_backtrace();
+            trigger_error("Erreur dans ImageDAO.getImageList: nombre d'images nul");
+        }
+        if($cat!="all") {
+            $tmp = $this->db->query('SELECT * FROM image WHERE id >= '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT '.$nb.'; ')->fetchAll(PDO::FETCH_ASSOC);
+            foreach($tmp as $key => $value)
+            if(isset($tmp[$key])) {
+                $result = $tmp[$key];
+                $res[] =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            }
+        } else {
+            $res = $this->getImageList($img, $nb);
         }
         return $res;
     }

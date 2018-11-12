@@ -13,7 +13,7 @@ class PhotoMatrix
     public function getParam()
     {
         // Recupère le numero de l'image courante
-        global $imageId, $size, $zoom, $nbImg;
+        global $imageId, $size, $zoom, $nbImg, $category;
         if (isset($_GET["imageId"])) {
             $imageId = $_GET["imageId"];
         } else {
@@ -38,22 +38,32 @@ class PhotoMatrix
         } else {
             $nbImg = 1;
         }
+
+        //Recuere la catégorie courante
+        if (isset($_GET["category"])) 
+        {
+            $category = $_GET["category"];
+        } 
+        else 
+        {
+            $category = "all";
+        }
     }
     # Calcule les éléments du menu
     private function setMenuView()
     {
-        global $imageId, $size, $zoom, $data, $nbImg;
+        global $imageId, $size, $zoom, $data, $nbImg, $category;
         $data->menu['Home'] = "index.php";
-        $data->menu['First'] = "index.php?controller=photoMatrix&action=first&imageId=$imageId&size=$size&nbImg=$nbImg";
-        $data->menu['Random'] = "index.php?controller=photoMatrix&action=random&imageId=$imageId&size=$size&nbImg=$nbImg";
+        $data->menu['First'] = "index.php?controller=photoMatrix&action=first&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
+        $data->menu['Random'] = "index.php?controller=photoMatrix&action=random&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
         # Pour afficher plus d'image passe à un autre controleur
-        $data->menu['More'] = "index.php?controller=photoMatrix&action=more&imageId=$imageId&nbImg=$nbImg&size=$size";
-        $data->menu['Less'] = "index.php?controller=photoMatrix&action=less&imageId=$imageId&nbImg=$nbImg&size=$size";
+        $data->menu['More'] = "index.php?controller=photoMatrix&action=more&imageId=$imageId&nbImg=$nbImg&size=$size&category=$category";
+        $data->menu['Less'] = "index.php?controller=photoMatrix&action=less&imageId=$imageId&nbImg=$nbImg&size=$size&category=$category";
 
-        $data->menu["Zoom +"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=1.25&nbImg=$nbImg";
+        $data->menu["Zoom +"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=1.25&nbImg=$nbImg&category=$category";
         # Place la même action sur l'image
         //$zoomm=$zoom*0.8;
-        $data->menu["Zoom -"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=0.8&nbImg=$nbImg";
+        $data->menu["Zoom -"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=0.8&nbImg=$nbImg&category=$category";
     }
 
 
@@ -61,7 +71,7 @@ class PhotoMatrix
     # Place les parametres de la vue en fonction des paramètres
     private function setContentView()
     {
-        global $imageId, $size, $zoom, $data, $nbImg, $list, $categories;
+        global $imageId, $size, $zoom, $data, $nbImg, $list, $categories, $category;
         # Choisit la vue partielle en image simple
         $data->content = "view/photoMatrixView.php";
         # Trouve l'image courante affichée
@@ -72,9 +82,9 @@ class PhotoMatrix
         $data->categories = $this->imgDAO->getCategories();
         # Si une taille est connue dans l'état, la passe cette valeur à la vue
         # Renseigne la vue avec l'URL des boutons 'suivant' et 'précédent'  
-        $data->prevURL = "index.php?controller=photoMatrix&action=prev&imageId=$imageId&size=$size&nbImg=$nbImg";
-        $data->nextURL = "index.php?controller=photoMatrix&action=next&imageId=$imageId&size=$size&nbImg=$nbImg";
-        $list = $this->imgDAO->getImageList($img,$nbImg);
+        $data->prevURL = "index.php?controller=photoMatrix&action=prev&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
+        $data->nextURL = "index.php?controller=photoMatrix&action=next&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
+        $list = $this->imgDAO->getImageListOfCategory($img,$nbImg,$category);
         $data->size = $size / sqrt(count($list));
 
         foreach ($list as $i) {
@@ -100,21 +110,20 @@ class PhotoMatrix
     public function first()
     {
         # Construit et affiche la vue
-        global $imageId, $nbImg;
+        global $imageId, $category;
         $this->getParam();
-        $imageId = 1;
+        $imageId = $this->imgDAO->getFirstImageOfCategory($category)->getId();
         $this->setLoadMainView();
         # charge la vue pour l'afficher
         require_once "view/mainView.php";
-
     }
     public function next()
     {
-        global $imageId, $nbImg;
+        global $imageId, $nbImg, $category;
         $this->getParam();
         # Trouve l'image courante affichée
         $img = $this->imgDAO->getImage($imageId);
-        $img = $this->imgDAO->jumpToImage($img,$nbImg);
+        $img = $this->imgDAO->jumpToImageOfCategory($img,$nbImg, $category);
         $imageId = $img->getId();
         # Construit et affiche la vue
         $this->setLoadMainView();
@@ -123,11 +132,11 @@ class PhotoMatrix
     }
     public function prev()
     {
-        global $imageId, $nbImg;
+        global $imageId, $nbImg, $category;
         $this->getParam();
         # Trouve l'image courante affichée
         $img = $this->imgDAO->getImage($imageId);
-        $img = $this->imgDAO->jumpToImage($img,-$nbImg);
+        $img = $this->imgDAO->jumpToImageOfCategory($img,-$nbImg, $category);
         $imageId = $img->getId();
         # Construit et affiche la vue
         $this->setLoadMainView();
@@ -135,7 +144,7 @@ class PhotoMatrix
     }
     public function more()
     {
-        global $imageId, $nbImg;
+        global $imageId, $nbImg, $category;
         $this->getParam();
         # Trouve l'image courante affichée
         $nbImg*=2;
@@ -146,7 +155,7 @@ class PhotoMatrix
     }
     public function less()
     {
-        global $imageId, $nbImg;
+        global $imageId, $nbImg, $category;
         $this->getParam();
         # Trouve l'image courante affichée
         $nbImg/=2;
@@ -156,9 +165,9 @@ class PhotoMatrix
     }
     public function random()
     {
-        global $imageId;
+        global $imageId, $category;
         $this->getParam();
-        $img = $this->imgDAO->getRandomImage();
+        $img = $this->imgDAO->getRandomImageOfCategory($category);
         $imageId = $img->getId();
         # Construit et affiche la vue
         $this->setLoadMainView();
@@ -166,7 +175,7 @@ class PhotoMatrix
     }
     public function zoom()
     {
-        global $imageId, $size, $zoom;
+        global $imageId, $size, $zoom, $category;;
         $this->getParam();
         $size*=$zoom;
         # Construit et affiche la vue

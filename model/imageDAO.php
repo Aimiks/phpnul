@@ -86,8 +86,7 @@ class ImageDAO
             return $this->getRandomImage();
         }
         $list = $this->getAllImagesIDsOfCategory($cat);
-        //TODO PATCH
-        $img = $list[rand(0, count($list))];
+        $img = $this->getImage($list[rand(0, count($list))]);
         return $img;
     }
 
@@ -99,14 +98,15 @@ class ImageDAO
 
     public function getFirstImageOfCategory($cat)
     {
-        if($cat=="all") {
-            return $this->getFirstImage();
+        if($cat!="all") {
+            $tmp = $this->db->query('SELECT * FROM image WHERE category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
+            if(isset($tmp[0])) {
+                $result = $tmp[0];
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            }
+        } else {
+            $img = $this->getFirstImage();
         }
-        $nb = 1;
-        do {
-            $img = $this->getImage($nb);
-            $nb+=1;
-        } while($img->getCategory() != $cat && $cat!="all");
         return $img;
     }
 
@@ -122,18 +122,16 @@ class ImageDAO
 
     public function getNextImageOfCategory(image $img, $cat)
     {
-        $baseImg = $img;
-        do 
-        {
-            $id = $img->getId();
-            $img = $this->getNextImage($img);  
-        } while ($img->getCategory() != $cat && $cat!="all" && $id < $this->size());
-        if ($img->getCategory() == $cat) 
-        {
-            return $img;
+        if($cat!="all") {
+            $tmp = $this->db->query('SELECT * FROM image WHERE id > '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
+            if(isset($tmp[0])) {
+                $result = $tmp[0];
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            }
+        } else {
+            $img = $this->getNextImage($img);
         }
-        // No next img with the category found
-        return $baseImg;
+        return $img;
     }
 
     # Retourne l'image précédente d'une image
@@ -147,18 +145,16 @@ class ImageDAO
     }
     public function getPrevImageOfCategory(image $img, $cat)
     {
-        $baseImg = $img;
-        do 
-        {
-            $id = $img->getId();
-            $img = $this->getPrevImage($img);  
-        } while ($img->getCategory() != $cat && $cat!="all" && $id > 1);
-        if ($img->getCategory() == $cat) 
-        {
-            return $img;
+        if($cat!="all") {
+            $tmp = $this->db->query('SELECT * FROM image WHERE id < '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id DESC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
+            if(isset($tmp[0])) {
+                $result = $tmp[0];
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            }
+        } else {
+            $img = $this->getPrevImage($img);
         }
-        // No prev img with the category found
-        return $baseImg;
+        return $img;
     }
 
 

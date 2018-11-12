@@ -108,7 +108,7 @@ class Photo
         $this->getParam();
         # Trouve l'image courante affichée
         $img = $this->imgDAO->getImage($imageId);
-        # On passe simplement à l'image suivante
+        # On passe simplement à l'image suivante    
         $img = $this->imgDAO->getNextImageOfCategory($img, $category);
         # Positionne l'etat pour indiquer le No de la première image visible
         $imageId = $img->getId();

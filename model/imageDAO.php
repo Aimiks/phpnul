@@ -65,7 +65,7 @@ class ImageDAO
         $s = $this->db->query('SELECT * FROM image WHERE id=' . $id);
         if ($s) {
             $result = $s->fetchAll(PDO::FETCH_ASSOC)[0];
-            return new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            return new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
         } else {
             print "Error in getImage. id=" . $id . "<br/>";
             $err = $this->db->errorInfo();
@@ -102,12 +102,17 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img = new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
             }
         } else {
             $img = $this->getFirstImage();
         }
         return $img;
+    }
+
+    public function getFirstImageOrderByNote() {
+        $array_id = $this->getAllImageIDsSortedByNote();
+        return $this->getImage($array_id[0]);
     }
 
     # Retourne l'image suivante d'une image
@@ -126,12 +131,22 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id > '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img = new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
             }
         } else {
             $img = $this->getNextImage($img);
         }
         return $img;
+    }
+
+    public function getNextImageOrderedByNote(image $img) {
+        $id = $img->getId();
+        $array_id = $this->getAllImageIDsSortedByNote();
+        $key = array_search($id,$array_id);
+        if($key<count($array_id)-1) {
+            $key+=1;
+        }
+        return $this->getImage($array_id[$key]);
     }
 
     # Retourne l'image précédente d'une image
@@ -149,12 +164,22 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id < '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id DESC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img = new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
             }
         } else {
             $img = $this->getPrevImage($img);
         }
         return $img;
+    }
+
+    public function getPrevImageOrderedByNote(image $img) {
+        $id = $img->getId();
+        $array_id = $this->getAllImageIDsSortedByNote();
+        $key = array_search($id,$array_id);
+        if($key>0) {
+            $key-=1;
+        }
+        return $this->getImage($array_id[$key]);
     }
 
 
@@ -177,7 +202,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id '.$op.' '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id '.$order.' LIMIT '.abs($nb).'; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[abs($nb)-1])) {
                 $result = $tmp[abs($nb)-1];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
             }
         } else {
             $img = $this->jumpToImage($img, $nb);
@@ -214,7 +239,7 @@ class ImageDAO
             foreach($tmp as $key => $value)
             if(isset($tmp[$key])) {
                 $result = $tmp[$key];
-                $res[] =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $res[] =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
             }
         } else {
             $res = $this->getImageList($img, $nb);
@@ -241,6 +266,15 @@ class ImageDAO
         return $list;
     }
 
+    public function getAllImageIDsSortedByNote() {
+        $tmp = $this->db->query('SELECT id FROM image GROUP BY id ORDER BY note DESC')->fetchAll();
+        $list = array();
+        foreach ($tmp as $t) {
+            $list[] = $t['id'];
+        }
+        return $list;
+    }
+
     public function getCategories()
     {
         $tmp = $this->db->query('SELECT distinct category FROM image')->fetchAll();
@@ -249,6 +283,16 @@ class ImageDAO
             $list[] = $t['category'];
         }
         return $list;
+    }
+
+    public function like($imgId) {
+        $note = $this->getImage($imgId)->getNote();
+        $tmp = $this->db->query('UPDATE image SET note=\''.($note+1).'\' WHERE id= \''.$imgId.'\'');
+    }
+    
+    public function dislike($imgId) {
+        $note = $this->getImage($imgId)->getNote();
+        $tmp = $this->db->query('UPDATE image SET note=\''.($note-1).'\' WHERE id= \''.$imgId.'\'');
     }
 }
 

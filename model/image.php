@@ -6,10 +6,11 @@
     private $id=0;
     private $category="none";
     
-    function __construct($u,$id, $category) {
+    function __construct($u,$id, $category, $note) {
       $this->url = $u;
       $this->id = $id;
       $this->category = $category;
+      $this->note = $note;
     }
     
     # Retourne l'URL de cette image
@@ -21,6 +22,10 @@
     }
     function getCategory() {
       return $this->category;
+    }
+
+    function getNote() {
+      return $this->note;
     }
 
   }

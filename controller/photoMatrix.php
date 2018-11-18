@@ -13,7 +13,7 @@ class PhotoMatrix
     public function getParam()
     {
         // Recupère le numero de l'image courante
-        global $imageId, $size, $zoom, $nbImg, $category;
+        global $imageId, $size, $zoom, $nbImg, $category, $comment;
         if (isset($_GET["imageId"])) {
             $imageId = $_GET["imageId"];
         } else {
@@ -47,6 +47,16 @@ class PhotoMatrix
         else 
         {
             $category = "all";
+        }
+
+        //Recup commentaire
+        if (isset($_GET["comment"]))
+        {
+            $comment = $_GET["comment"];
+        }
+        else
+        {
+            $comment = "";
         }
     }
     # Calcule les éléments du menu

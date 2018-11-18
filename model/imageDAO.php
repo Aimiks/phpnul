@@ -8,9 +8,9 @@ class ImageDAO
     # A MODIFIER EN FONCTION DE VOTRE INSTALLATION
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # Chemin LOCAL où se trouvent les images
-    private $path = "model/IMG";
+    private $path = "model/IMG/jons/";
     # Chemin URL où se trouvent les images
-    private $urlPath = "http://iut.local/image/model/IMG/";
+    private $urlPath = "localhost/phpnul/model/IMG/jons/";
 
     # Tableau pour stocker tous les chemins des images
     private $imgEntry;
@@ -43,9 +43,9 @@ class ImageDAO
 
     public function __construct()
     {
-        $dsn = 'pgsql:host=localhost dbname=phpbase1'; // Data source name
-        $user = 'admin'; // Utilisateur
-        $pass = 'admin'; // Mot de passe
+        $dsn = 'sqlite:E:\Xampp\htdocs\phpnul\model\DB\imageDB'; // Data source name
+        $user = ''; // Utilisateur
+        $pass = ''; // Mot de passe
         try {
             $this->db = new PDO($dsn, $user, $pass); //$db est un attribut privé d'ImageDAO
         } catch (PDOException $e) {
@@ -65,7 +65,7 @@ class ImageDAO
         $s = $this->db->query('SELECT * FROM image WHERE id=' . $id);
         if ($s) {
             $result = $s->fetchAll(PDO::FETCH_ASSOC)[0];
-            return new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+            return new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["comment"]);
         } else {
             print "Error in getImage. id=" . $id . "<br/>";
             $err = $this->db->errorInfo();
@@ -102,7 +102,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["comment"]);
             }
         } else {
             $img = $this->getFirstImage();
@@ -126,7 +126,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id > '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["comment"]);
             }
         } else {
             $img = $this->getNextImage($img);
@@ -149,7 +149,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id < '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id DESC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["comment"]);
             }
         } else {
             $img = $this->getPrevImage($img);
@@ -177,7 +177,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id '.$op.' '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id '.$order.' LIMIT '.abs($nb).'; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[abs($nb)-1])) {
                 $result = $tmp[abs($nb)-1];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["comment"]);
             }
         } else {
             $img = $this->jumpToImage($img, $nb);
@@ -214,7 +214,7 @@ class ImageDAO
             foreach($tmp as $key => $value)
             if(isset($tmp[$key])) {
                 $result = $tmp[$key];
-                $res[] =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"]);
+                $res[] =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["comment"]);
             }
         } else {
             $res = $this->getImageList($img, $nb);
@@ -250,6 +250,17 @@ class ImageDAO
         }
         return $list;
     }
+
+    public function getComment()
+    {
+        $tmp = $this->db->query('SELECT distinct comment FROM image')->fetchAll();
+        $list = array();
+        foreach ($tmp as $t) {
+            $list[] = $t['comment'];
+        }
+        return $list;
+    }
+
 }
 
 # Test unitaire

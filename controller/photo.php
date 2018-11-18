@@ -13,7 +13,7 @@ class Photo
     public function getParam()
     {
         // Recupère le numero de l'image courante
-        global $imageId, $size, $zoom, $category;
+        global $imageId, $size, $zoom, $category, $comment;
         if (isset($_GET["imageId"])) {
             $imageId = $_GET["imageId"];
         } else {
@@ -37,16 +37,26 @@ class Photo
         if (isset($_GET["category"])) 
         {
             $category = $_GET["category"];
-        } 
+        }
         else 
         {
             $category = "all";
+        }
+
+        //Recup commentaire courant
+        if (isset($_GET["comment"]))
+        {
+            $comment = $_GET["comment"];
+        }
+        else
+        {
+            $comment = "";
         }
     }
     # Calcule les éléments du menu
     private function setMenuView()
     {
-        global $imageId, $size, $zoom, $data, $category;
+        global $imageId, $size, $zoom, $data, $category, $comment;
         $data->menu['Home'] = "index.php";
         $data->menu['First'] = "index.php?controller=photo&action=first&imageId=$imageId&size=$size&category=$category";
         $data->menu['Random'] = "index.php?controller=photo&action=random&imageId=$imageId&size=$size&category=$category";
@@ -62,7 +72,7 @@ class Photo
     # Place les parametres de la vue en fonction des paramètres
     private function setContentView()
     {
-        global $imageId, $size, $zoom, $data, $category;
+        global $imageId, $size, $zoom, $data, $category, $comment;
         # Choisit la vue partielle en image simple
         $data->content = "view/photoView.php";
         # Trouve l'image courante affichée
@@ -73,6 +83,7 @@ class Photo
         $data->size = $size;
         $data->categories = $this->imgDAO->getCategories();
         $data->currentCategory = $category;
+        $data->comment = $this->imgDAO->getComment();
         # Renseigne la vue avec l'URL des boutons 'suivant' et 'précédent'
         $data->prevURL = "index.php?controller=photo&action=prev&imageId=$imageId&size=$size&category=$category";
         $data->nextURL = "index.php?controller=photo&action=next&imageId=$imageId&size=$size&category=$category";

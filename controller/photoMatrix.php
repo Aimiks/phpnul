@@ -13,7 +13,7 @@ class PhotoMatrix
     public function getParam()
     {
         // Recupère le numero de l'image courante
-        global $imageId, $size, $zoom, $nbImg, $category;
+        global $imageId, $size, $zoom, $nbImg, $category, $comment;
         if (isset($_GET["imageId"])) {
             $imageId = $_GET["imageId"];
         } else {
@@ -48,22 +48,32 @@ class PhotoMatrix
         {
             $category = "all";
         }
+
+        //Recup commentaire
+        if (isset($_GET["comment"]))
+        {
+            $comment = $_GET["comment"];
+        }
+        else
+        {
+            $comment = "";
+        }
     }
     # Calcule les éléments du menu
     private function setMenuView()
     {
-        global $imageId, $size, $zoom, $data, $nbImg, $category;
+        global $imageId, $size, $zoom, $data, $nbImg, $category, $comment;
         $data->menu['Home'] = "index.php";
-        $data->menu['First'] = "index.php?controller=photoMatrix&action=first&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
-        $data->menu['Random'] = "index.php?controller=photoMatrix&action=random&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
+        $data->menu['First'] = "index.php?controller=photoMatrix&action=first&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category&comment=$comment";
+        $data->menu['Random'] = "index.php?controller=photoMatrix&action=random&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category&comment=$comment";
         # Pour afficher plus d'image passe à un autre controleur
-        $data->menu['More'] = "index.php?controller=photoMatrix&action=more&imageId=$imageId&nbImg=$nbImg&size=$size&category=$category";
-        $data->menu['Less'] = "index.php?controller=photoMatrix&action=less&imageId=$imageId&nbImg=$nbImg&size=$size&category=$category";
+        $data->menu['More'] = "index.php?controller=photoMatrix&action=more&imageId=$imageId&nbImg=$nbImg&size=$size&category=$category&comment=$comment";
+        $data->menu['Less'] = "index.php?controller=photoMatrix&action=less&imageId=$imageId&nbImg=$nbImg&size=$size&category=$category&comment=$comment";
 
-        $data->menu["Zoom +"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=1.25&nbImg=$nbImg&category=$category";
+        $data->menu["Zoom +"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=1.25&nbImg=$nbImg&category=$category&comment=$comment";
         # Place la même action sur l'image
         //$zoomm=$zoom*0.8;
-        $data->menu["Zoom -"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=0.8&nbImg=$nbImg&category=$category";
+        $data->menu["Zoom -"] = "index.php?controller=photoMatrix&action=zoom&imageId=$imageId&size=$size&zoom=0.8&nbImg=$nbImg&category=$category&comment=$comment";
     }
 
 
@@ -71,7 +81,7 @@ class PhotoMatrix
     # Place les parametres de la vue en fonction des paramètres
     private function setContentView()
     {
-        global $imageId, $size, $zoom, $data, $nbImg, $list, $categories, $category;
+        global $imageId, $size, $zoom, $data, $nbImg, $list, $categories, $category, $comment;
         # Choisit la vue partielle en image simple
         $data->content = "view/photoMatrixView.php";
         # Trouve l'image courante affichée
@@ -82,8 +92,8 @@ class PhotoMatrix
         $data->categories = $this->imgDAO->getCategories();
         # Si une taille est connue dans l'état, la passe cette valeur à la vue
         # Renseigne la vue avec l'URL des boutons 'suivant' et 'précédent'  
-        $data->prevURL = "index.php?controller=photoMatrix&action=prev&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
-        $data->nextURL = "index.php?controller=photoMatrix&action=next&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category";
+        $data->prevURL = "index.php?controller=photoMatrix&action=prev&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category&comment=$comment";
+        $data->nextURL = "index.php?controller=photoMatrix&action=next&imageId=$imageId&size=$size&nbImg=$nbImg&category=$category&comment=$comment";
         $list = $this->imgDAO->getImageListOfCategory($img,$nbImg,$category);
         $data->size = $size / sqrt(count($list));
 

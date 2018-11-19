@@ -1,8 +1,7 @@
 <?php
 global $data, $imageId;
 include($data->content);
-$bool = $data->content != "view/homeView.php" && $data->content != "view/aProposView.php";
-
+$bool = $data->content != "homeView.php" && $data->content != "aproposView.php" && $data->content != "view/homeView.php" && $data->content != "view/aproposView.php";
 if($bool)  {
     print ('
     <div id="form">

@@ -53,6 +53,11 @@ class ImageDAO
         }
     }
 
+    private function createImageFromRes($result) {
+        return new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"], $result["comment"]);
+
+    }
+
     # Retourne le nombre d'images référencées dans le DAO
     public function size()
     {
@@ -65,7 +70,7 @@ class ImageDAO
         $s = $this->db->query('SELECT * FROM image WHERE id=' . $id);
         if ($s) {
             $result = $s->fetchAll(PDO::FETCH_ASSOC)[0];
-            return new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
+            return $this->createImageFromRes($result);
         } else {
             print "Error in getImage. id=" . $id . "<br/>";
             $err = $this->db->errorInfo();
@@ -102,7 +107,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img = new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
+                $img = $this->createImageFromRes($result);
             }
         } else {
             $img = $this->getFirstImage();
@@ -131,7 +136,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id > '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id ASC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img = new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
+                $img = $this->createImageFromRes($result);
             }
         } else {
             $img = $this->getNextImage($img);
@@ -164,7 +169,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id < '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id DESC LIMIT 1; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[0])) {
                 $result = $tmp[0];
-                $img = new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
+                $img = $this->createImageFromRes($result);
             }
         } else {
             $img = $this->getPrevImage($img);
@@ -202,7 +207,7 @@ class ImageDAO
             $tmp = $this->db->query('SELECT * FROM image WHERE id '.$op.' '.$img->getId().' and category = \''.$cat.'\' GROUP BY id ORDER BY id '.$order.' LIMIT '.abs($nb).'; ')->fetchAll(PDO::FETCH_ASSOC);
             if(isset($tmp[abs($nb)-1])) {
                 $result = $tmp[abs($nb)-1];
-                $img =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
+                $img = $this->createImageFromRes($result);
             }
         } else {
             $img = $this->jumpToImage($img, $nb);
@@ -239,7 +244,7 @@ class ImageDAO
             foreach($tmp as $key => $value)
             if(isset($tmp[$key])) {
                 $result = $tmp[$key];
-                $res[] =  new Image($this->urlPath . $result["path"], $result["id"], $result["category"], $result["note"]);
+                $res[] = $this->createImageFromRes($result);
             }
         } else {
             $res = $this->getImageList($img, $nb);

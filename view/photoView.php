@@ -33,6 +33,8 @@
 				// Réalise l'affichage de l'image
 				print "<img src=\"$data->imageURL\" width=\"$data->size\">\n";
 				print "</a>\n";
+				print "<br>";
+				print "Commentaire : ".$data->actualComment;
 				?>		
 			</div>
 		

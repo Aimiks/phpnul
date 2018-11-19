@@ -51,7 +51,7 @@ class Photo
         else 
         {
             $order = "normal";
-        }
+        }        
     }
     # Calcule les éléments du menu
     private function setMenuView()
@@ -90,6 +90,7 @@ class Photo
         $data->size = $size;
         $data->categories = $this->imgDAO->getCategories();
         $data->currentCategory = $category;
+        $data->actualComment = $img->getComment();
         # Renseigne la vue avec l'URL des boutons 'suivant' et 'précédent'
         $data->prevURL = "index.php?controller=photo&action=prev&imageId=$imageId&size=$size&category=$category&order=$order";
         $data->nextURL = "index.php?controller=photo&action=next&imageId=$imageId&size=$size&category=$category&order=$order";

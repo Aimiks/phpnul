@@ -35,6 +35,8 @@
 				print "</a>\n";
 				print "<br>";
 				print "Commentaire : ".$data->actualComment;
+				print "<br>";
+				print "Score de j'aime : ".$data->likeScore;
 				?>		
 			</div>
 		

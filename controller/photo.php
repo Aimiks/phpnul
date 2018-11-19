@@ -10,6 +10,9 @@ class Photo
         $this->imgDAO = new imageDAO();
     }
 
+    /**
+     * Get the get parameters in the URL
+     */
     public function getParam()
     {
         // Recupère le numero de l'image courante
@@ -91,6 +94,7 @@ class Photo
         $data->categories = $this->imgDAO->getCategories();
         $data->currentCategory = $category;
         $data->actualComment = $img->getComment();
+        $data->likeScore = $img->getNote();
         # Renseigne la vue avec l'URL des boutons 'suivant' et 'précédent'
         $data->prevURL = "index.php?controller=photo&action=prev&imageId=$imageId&size=$size&category=$category&order=$order";
         $data->nextURL = "index.php?controller=photo&action=next&imageId=$imageId&size=$size&category=$category&order=$order";
@@ -115,7 +119,7 @@ class Photo
         # Construit et affiche la vue
         global $imageId, $category, $order;
         $this->getParam();
-        if($order=="pop") {
+        if($order=="pop" && $category=="all") {
             $imageId = $this->imgDAO->getFirstImageOrderByNote()->getId();
         } else {
             $imageId = $this->imgDAO->getFirstImageOfCategory($category,$order)->getId();
@@ -124,6 +128,9 @@ class Photo
         # charge la vue pour l'afficher
         require_once "view/mainView.php";
     }
+    /**
+     * Display the next img
+     */
     public function next()
     {
         global $imageId, $category, $order;
@@ -131,7 +138,7 @@ class Photo
         # Trouve l'image courante affichée
         $img = $this->imgDAO->getImage($imageId);
         # On passe simplement à l'image suivante    
-        if($order=="pop") {
+        if($order=="pop" && $category=="all") {
             $img = $this->imgDAO->getNextImageOrderedByNote($img);
         } else {
             $img = $this->imgDAO->getNextImageOfCategory($img, $category, $order);
@@ -151,7 +158,7 @@ class Photo
         # Trouve l'image courante affichée
         $img = $this->imgDAO->getImage($imageId);
         # On passe simplement à l'image suivante
-        if($order=="pop") {
+        if($order=="pop" && $category=="all") {
             $img = $this->imgDAO->getPrevImageOrderedByNote($img);
         } else {
             $img = $this->imgDAO->getPrevImageOfCategory($img, $category, $order);
